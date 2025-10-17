@@ -237,6 +237,11 @@ function openQuestionModal(catIndex, val) {
   audioSecondary.src = secPath;
   answerVideo.src = videoPath; // usado cuando se pulsa Resolver
 
+  // --- LOGS DE DEPURACIÓN ---
+  console.log("🎵 Cargando pista principal:", mainPath);
+  console.log("🎵 Cargando pista secundaria:", secPath);
+  console.log("🎬 Cargando video:", videoPath);
+
   // Reset UI secundarios
   secondaryStatus.textContent = "(no pagada)";
   playSecondaryBtn.disabled = true;
