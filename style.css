@@ -1,0 +1,45 @@
+:root{
+  --bg:#0f1724;
+  --card:#0b1220;
+  --accent:#ffcc00;
+  --muted:#96a0b6;
+  --glass: rgba(255,255,255,0.03);
+}
+*{box-sizing:border-box}
+html,body,#app{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+body{background:linear-gradient(180deg,#071024 0%, #0b1220 100%);color:#e6eef8}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px}
+header h1{margin:0;font-size:1.4rem}
+#top-controls button{margin-left:8px}
+
+#board-area{display:flex;gap:16px;padding:12px 24px}
+#scoreboard{width:240px;background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+#teams-list{display:flex;flex-direction:column;gap:8px}
+.team{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:var(--glass)}
+.team.current{outline:3px solid rgba(255,204,0,0.12)}
+.team .name{font-weight:600}
+.team .score{font-weight:700}
+.controls{display:flex;gap:8px;margin-top:12px}
+
+#board{flex:1;display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.category{background:linear-gradient(180deg,#071b2b,#082233);padding:8px;border-radius:8px;text-align:center}
+.category h3{margin:6px 0}
+.value-cell{background:var(--glass);padding:20px;border-radius:8px;cursor:pointer;font-weight:800;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.value-cell.disabled{opacity:0.35;pointer-events:none}
+
+.modal-screen{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center}
+.modal{background:#071022;padding:18px;border-radius:12px;min-width:320px;max-width:92%;box-shadow:0 10px 40px rgba(0,0,0,0.6)}
+.modal.large{min-width:720px}
+.hidden{display:none}
+.modal .close{position:absolute;right:16px;top:12px;background:none;border:0;color:#fff;font-size:1.1rem}
+.audio-controls{display:flex;gap:8px;align-items:center;margin:12px 0}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+footer{padding:12px 24px;color:var(--muted)}
+
+/* Responsive */
+@media (max-width:900px){
+  #board{grid-template-columns:repeat(2,1fr)}
+  #scoreboard{width:100%}
+  #board-area{flex-direction:column}
+}

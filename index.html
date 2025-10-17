@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jeoparty Music</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="app">
+    <header>
+      <h1>Jeoparty Music</h1>
+      <div id="top-controls">
+        <button id="btn-new-game">Nuevo juego</button>
+        <button id="btn-reset">Reiniciar tablero</button>
+      </div>
+    </header>
+
+    <section id="setup" class="modal-screen">
+      <div class="modal">
+        <h2>Crear partida</h2>
+        <label>Nº de equipos: <input id="num-teams" type="number" min="1" max="8" value="2" /></label>
+        <div id="teams-names"></div>
+        <div class="row">
+          <button id="btn-create">Crear partida</button>
+        </div>
+        <p class="muted">Los datos se guardan en localStorage para persistir entre recargas.</p>
+      </div>
+    </section>
+
+    <section id="board-area">
+      <aside id="scoreboard">
+        <h3>Equipos</h3>
+        <div id="teams-list"></div>
+        <div class="controls">
+          <button id="btn-prev-team">« Anterior</button>
+          <button id="btn-next-team">Siguiente »</button>
+        </div>
+        <p id="current-team-indicator"></p>
+      </aside>
+
+      <section id="board">
+        <!-- tablero generado por JS -->
+      </section>
+    </section>
+
+    <!-- Modal de pregunta -->
+    <div id="question-modal" class="modal-screen hidden">
+      <div class="modal large">
+        <button class="close" id="close-question">✕</button>
+        <h2 id="q-title"></h2>
+        <p id="q-value"></p>
+
+        <div class="audio-controls">
+          <button id="play-main">▶️ Pista principal</button>
+          <button id="pay-secondary">💰 Pista secundaria (100 pts)</button>
+          <span id="secondary-status"></span>
+        </div>
+
+        <audio id="audio-main" preload="none"></audio>
+        <audio id="audio-secondary" preload="none"></audio>
+
+        <div class="actions">
+          <button id="btn-resolve">✅ Resolver</button>
+          <button id="btn-back">⏪ Volver al tablero</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal video de respuesta -->
+    <div id="answer-modal" class="modal-screen hidden">
+      <div class="modal large">
+        <button class="close" id="close-answer">✕</button>
+        <h2>Respuesta</h2>
+        <video id="answer-video" controls preload="metadata"></video>
+        <div class="actions">
+          <button id="answer-back">Volver al tablero</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <small>Jeoparty Music — diseñado para reproducir pistas y mostrar vídeos de respuesta. Coloca tus archivos en /assets/.</small>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
