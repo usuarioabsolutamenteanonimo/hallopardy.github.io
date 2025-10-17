@@ -1,281 +1,253 @@
-/*
-  Jeoparty Music - script.js
-  Reglas implementadas:
-   - Configuración de equipos (nombre + puntuación)
-   - Tablero 6 categorías x 5 valores (200..1000)
-   - Modal de pregunta con audio principal y secundaria (la secundaria cuesta 100 puntos)
-   - La secundaria se resetea cada vez que se abre la pregunta
-   - Resolución muestra video de respuesta y suma puntos al equipo que resuelve
-   - Pregunta deshabilitada permanentemente una vez resuelta
-   - Estado persistente en localStorage
-*/
+/* =======================================================
+   JEOPARTY MUSIC — script.js
+   ======================================================= */
 
-// ----------------- CONFIG -----------------
-const CATEGORIES = [
-  {id: 'anime', name: 'Anime'},
-  {id: 'cultura', name: 'Cultura popular'},
-  {id: 'rock', name: 'Rock/Metal'},
-  {id: 'meme', name: 'Meme / cultura digital'},
-  {id: 'videojuegos', name: 'Videojuegos'},
-  {id: 'random', name: '???'}
+// ======= VARIABLES GLOBALES =======
+const categories = [
+  "Anime",
+  "Cultura popular",
+  "Rock / Metal",
+  "Meme o cultura digital",
+  "Videojuegos",
+  "???",
 ];
-const VALUES = [200,400,600,800,1000];
+const values = [200, 400, 600, 800, 1000];
 
-// Preguntas: el usuario ha dicho que ya tiene los archivos. Aquí el sistema espera que los mp3 y mp4 sigan la convención:
-// assets/audio/<categoria>/<categoria>-<value>-main.mp3
-// assets/audio/<categoria>/<categoria>-<value>-sec.mp3
-// assets/videos/<categoria>-<value>.mp4
+let teams = [];
+let currentTeam = 0;
+let usedQuestions = {};
+let secondaryPaid = {}; // Controla si la pista secundaria fue pagada este turno
 
-// ----------------- ESTADO -----------------
-let state = {
-  teams: [], // {name, score}
-  currentTeam: 0,
-  answered: {}, // { 'anime-200': true }
-};
+// Elementos principales
+const setup = document.getElementById("setup");
+const numTeamsInput = document.getElementById("num-teams");
+const teamsNamesDiv = document.getElementById("teams-names");
+const btnCreate = document.getElementById("btn-create");
+const boardEl = document.getElementById("board");
+const teamsList = document.getElementById("teams-list");
+const currentIndicator = document.getElementById("current-team-indicator");
+const changeTurnAudio = document.getElementById("change-turn-audio");
+const turnBanner = document.getElementById("turn-banner");
+const turnBannerText = document.getElementById("turn-banner-text");
 
-const LS_KEY = 'jeoparty_state_v1';
+// Modales
+const questionModal = document.getElementById("question-modal");
+const answerModal = document.getElementById("answer-modal");
 
-// ----------------- SELECTORES -----------------
-const setupScreen = document.getElementById('setup');
-const teamsNamesDiv = document.getElementById('teams-names');
-const numTeamsInput = document.getElementById('num-teams');
-const btnCreate = document.getElementById('btn-create');
-const btnNewGame = document.getElementById('btn-new-game');
-const btnReset = document.getElementById('btn-reset');
+const qTitle = document.getElementById("q-title");
+const qValue = document.getElementById("q-value");
+const audioMain = document.getElementById("audio-main");
+const audioSecondary = document.getElementById("audio-secondary");
+const playMain = document.getElementById("play-main");
+const paySecondary = document.getElementById("pay-secondary");
+const playSecondary = document.getElementById("play-secondary");
+const secondaryStatus = document.getElementById("secondary-status");
+const btnResolve = document.getElementById("btn-resolve");
+const btnPass = document.getElementById("btn-pass");
+const btnBack = document.getElementById("btn-back");
+const closeQuestion = document.getElementById("close-question");
 
-const teamsList = document.getElementById('teams-list');
-const currentIndicator = document.getElementById('current-team-indicator');
-const btnPrevTeam = document.getElementById('btn-prev-team');
-const btnNextTeam = document.getElementById('btn-next-team');
+const answerVideo = document.getElementById("answer-video");
+const answerBack = document.getElementById("answer-back");
+const closeAnswer = document.getElementById("close-answer");
 
-const boardEl = document.getElementById('board');
+// ======= FUNCIONES =======
 
-// Question modal
-const qModal = document.getElementById('question-modal');
-const qTitle = document.getElementById('q-title');
-const qValue = document.getElementById('q-value');
-const audioMain = document.getElementById('audio-main');
-const audioSecondary = document.getElementById('audio-secondary');
-const playMainBtn = document.getElementById('play-main');
-const paySecondaryBtn = document.getElementById('pay-secondary');
-const secondaryStatus = document.getElementById('secondary-status');
-const closeQuestionBtn = document.getElementById('close-question');
-const btnResolve = document.getElementById('btn-resolve');
-const btnBack = document.getElementById('btn-back');
-
-// Answer video modal
-const answerModal = document.getElementById('answer-modal');
-const answerVideo = document.getElementById('answer-video');
-const closeAnswerBtn = document.getElementById('close-answer');
-const answerBackBtn = document.getElementById('answer-back');
-
-// State for current question open
-let openQuestion = null; // {cat, value, key, secondaryPaid}
-
-// ----------------- INIT -----------------
-function loadState(){
-  const raw = localStorage.getItem(LS_KEY);
-  if(raw){
-    try{ state = JSON.parse(raw); }catch(e){ console.warn('No se pudo parsear estado, iniciando nuevo'); }
+// Crear campos de nombres de equipo
+numTeamsInput.addEventListener("change", () => {
+  const n = parseInt(numTeamsInput.value);
+  teamsNamesDiv.innerHTML = "";
+  for (let i = 0; i < n; i++) {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.placeholder = `Equipo ${i + 1}`;
+    input.id = `team-${i}`;
+    teamsNamesDiv.appendChild(input);
   }
-}
-
-function saveState(){
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-}
-
-function start(){
-  loadState();
-  if(!state.teams || state.teams.length===0){
-    openSetup();
-  }else{
-    renderAll();
-  }
-}
-
-// ----------------- SETUP SCREEN -----------------
-function openSetup(){
-  setupScreen.classList.remove('hidden');
-  teamsNamesDiv.innerHTML = '';
-  renderTeamInputs(numTeamsInput.value);
-}
-
-function renderTeamInputs(n){
-  teamsNamesDiv.innerHTML = '';
-  for(let i=0;i<n;i++){
-    const div = document.createElement('div');
-    div.className='row';
-    div.innerHTML = `<label>Nombre equipo ${i+1}: <input class="team-name-input" data-index="${i}" type="text" value="Equipo ${i+1}" /></label>`;
-    teamsNamesDiv.appendChild(div);
-  }
-}
-numTeamsInput.addEventListener('change', ()=> renderTeamInputs(numTeamsInput.value));
-
-btnCreate.addEventListener('click', ()=>{
-  const inputs = document.querySelectorAll('.team-name-input');
-  const teams = Array.from(inputs).map(i=>({name: i.value||'Equipo', score:0}));
-  state.teams = teams;
-  state.currentTeam = 0;
-  state.answered = {};
-  saveState();
-  setupScreen.classList.add('hidden');
-  renderAll();
 });
 
-btnNewGame.addEventListener('click', ()=>{
-  openSetup();
-});
-
-btnReset.addEventListener('click', ()=>{
-  // Reinicia solo el tablero (no los nombres)
-  if(!confirm('¿Reiniciar el tablero? Esto habilitará todas las preguntas y pondrá las puntuaciones a 0.')) return;
-  state.teams.forEach(t=>t.score=0);
-  state.answered = {};
-  state.currentTeam = 0;
-  saveState();
-  renderAll();
-});
-
-// ----------------- RENDER -----------------
-function renderAll(){
-  renderTeamsList();
+btnCreate.addEventListener("click", () => {
+  const n = parseInt(numTeamsInput.value);
+  teams = [];
+  for (let i = 0; i < n; i++) {
+    const name = document.getElementById(`team-${i}`)?.value || `Equipo ${i + 1}`;
+    teams.push({ name, score: 0 });
+  }
+  currentTeam = 0;
+  usedQuestions = {};
+  localStorage.setItem("jeoparty_teams", JSON.stringify(teams));
+  setup.classList.add("hidden");
   renderBoard();
-}
+  renderTeams();
+  updateTurnIndicator();
+});
 
-function renderTeamsList(){
-  teamsList.innerHTML = '';
-  state.teams.forEach((t,idx)=>{
-    const div = document.createElement('div');
-    div.className = 'team' + (idx===state.currentTeam? ' current':'');
-    div.innerHTML = `<div class="name">${t.name}</div><div class="score">${t.score}</div>`;
-    div.addEventListener('click', ()=>{ state.currentTeam = idx; saveState(); renderTeamsList(); renderBoard(); });
-    teamsList.appendChild(div);
-  });
-  currentIndicator.textContent = `Turno: ${state.teams[state.currentTeam]?.name || '-'} `;
-}
+// Renderizar tablero
+function renderBoard() {
+  boardEl.innerHTML = "";
+  categories.forEach((cat, catIndex) => {
+    const title = document.createElement("div");
+    title.className = "category";
+    title.textContent = cat;
+    boardEl.appendChild(title);
 
-btnPrevTeam.addEventListener('click', ()=>{ state.currentTeam = (state.currentTeam - 1 + state.teams.length) % state.teams.length; saveState(); renderAll(); });
-btnNextTeam.addEventListener('click', ()=>{ state.currentTeam = (state.currentTeam + 1) % state.teams.length; saveState(); renderAll(); });
-
-function renderBoard(){
-  boardEl.innerHTML = '';
-  // categorías header
-  CATEGORIES.forEach(cat=>{
-    const c = document.createElement('div');
-    c.className = 'category';
-    c.innerHTML = `<h3>${cat.name}</h3>`;
-    boardEl.appendChild(c);
-  });
-  // filas de valores
-  VALUES.forEach(val=>{
-    CATEGORIES.forEach(cat=>{
-      const key = `${cat.id}-${val}`;
-      const cell = document.createElement('div');
-      cell.className = 'value-cell' + (state.answered[key]? ' disabled':'');
-      cell.dataset.key = key;
-      cell.dataset.cat = cat.id;
+    values.forEach((val) => {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.textContent = val;
+      cell.dataset.cat = catIndex;
       cell.dataset.value = val;
-      cell.textContent = state.answered[key]? '' : val;
-      if(!state.answered[key]){
-        cell.addEventListener('click', ()=> openQuestionModal(cat.id, val));
+
+      if (usedQuestions[`${catIndex}-${val}`]) {
+        cell.classList.add("used");
       }
+
+      cell.addEventListener("click", () => openQuestion(catIndex, val));
       boardEl.appendChild(cell);
     });
   });
 }
 
-// ----------------- QUESTION FLOW -----------------
-function openQuestionModal(cat, value){
-  const key = `${cat}-${value}`;
-  openQuestion = {cat, value, key, secondaryPaid:false};
+// Renderizar lista de equipos
+function renderTeams() {
+  teamsList.innerHTML = "";
+  teams.forEach((t, i) => {
+    const div = document.createElement("div");
+    div.textContent = `${t.name}: ${t.score} pts`;
+    if (i === currentTeam) div.style.fontWeight = "bold";
+    teamsList.appendChild(div);
+  });
+}
 
-  qTitle.textContent = `${getCategoryName(cat)} — Pista (${value} pts)`;
-  qValue.textContent = `${value} puntos`;
+// Actualizar indicador de turno
+function updateTurnIndicator() {
+  currentIndicator.textContent = `Turno de: ${teams[currentTeam].name}`;
+}
 
-  // Rutas de archivos (convention)
-  const mainSrc = `assets/audio/${cat}/${cat}-${value}-main.mp3`;
-  const secSrc = `assets/audio/${cat}/${cat}-${value}-sec.mp3`;
-  const videoSrc = `assets/videos/${cat}-${value}.mp4`;
+// Mostrar animación y sonido de cambio de turno
+function showTurnChangeAnimation() {
+  changeTurnAudio.currentTime = 0;
+  changeTurnAudio.play();
+  turnBannerText.textContent = `Turno de ${teams[currentTeam].name}`;
+  turnBanner.classList.remove("hidden");
+  turnBanner.classList.add("show");
 
-  audioMain.src = mainSrc;
-  audioSecondary.src = secSrc;
-  answerVideo.src = videoSrc;
+  setTimeout(() => {
+    turnBanner.classList.remove("show");
+    turnBanner.classList.add("hidden");
+  }, 2000);
+}
 
-  secondaryStatus.textContent = '(no pagada)';
+// Cambiar turno automáticamente
+function nextTurn() {
+  currentTeam = (currentTeam + 1) % teams.length;
+  renderTeams();
+  updateTurnIndicator();
+  showTurnChangeAnimation();
+}
 
-  // setup buttons
-  playMainBtn.onclick = ()=>{ audioMain.currentTime = 0; audioMain.play(); };
-  paySecondaryBtn.onclick = ()=>{
-    // charge current team 100 pts immediately
-    const team = state.teams[state.currentTeam];
-    if(!team) return alert('No hay equipo activo');
-    if(team.score < 100){
-      if(!confirm('El equipo no tiene suficientes puntos. Pagar igualmente dejará la puntuación en negativo. ¿Continuar?')) return;
-    }
-    team.score -= 100;
-    openQuestion.secondaryPaid = true;
-    secondaryStatus.textContent = '(pagada)';
-    saveState();
-    renderTeamsList();
-    audioSecondary.currentTime = 0;
+// Abrir pregunta
+function openQuestion(catIndex, val) {
+  const key = `${catIndex}-${val}`;
+  if (usedQuestions[key]) return;
+
+  qTitle.textContent = `${categories[catIndex]} (${val} pts)`;
+  qValue.textContent = `Valor: ${val} puntos`;
+
+  audioMain.src = `assets/audio/${categories[catIndex].toLowerCase().replace(/\\s+/g, '')}/${val}-main.mp3`;
+  audioSecondary.src = `assets/audio/${categories[catIndex].toLowerCase().replace(/\\s+/g, '')}/${val}-secondary.mp3`;
+  answerVideo.src = `assets/videos/${categories[catIndex].toLowerCase().replace(/\\s+/g, '')}-${val}.mp4`;
+
+  questionModal.classList.remove("hidden");
+  secondaryPaid[key] = false;
+  secondaryStatus.textContent = "";
+  playSecondary.disabled = true;
+}
+
+// Pagar pista secundaria
+paySecondary.addEventListener("click", () => {
+  const cat = qTitle.textContent.split(" ")[0];
+  const val = parseInt(qValue.textContent.match(/\\d+/)[0]);
+  const key = `${categories.indexOf(cat)}-${val}`;
+
+  if (!secondaryPaid[key]) {
+    teams[currentTeam].score -= 100;
+    secondaryPaid[key] = true;
+    playSecondary.disabled = false;
+    secondaryStatus.textContent = "Pista secundaria desbloqueada.";
+    renderTeams();
+  }
+});
+
+// Reproducir pistas
+playMain.addEventListener("click", () => {
+  audioMain.play();
+});
+
+playSecondary.addEventListener("click", () => {
+  if (secondaryPaid) {
     audioSecondary.play();
-  };
+  }
+});
 
-  // Resolve button: award points to team and mark answered
-  btnResolve.onclick = ()=>{
-    // award points to current team
-    const team = state.teams[state.currentTeam];
-    if(!team) return alert('No hay equipo activo');
-    team.score += value;
-    state.answered[key] = true;
-    saveState();
-    // show answer video
-    qModal.classList.add('hidden');
-    answerModal.classList.remove('hidden');
-    answerVideo.currentTime = 0;
-    answerVideo.play();
-    renderAll();
-  };
+// Resolver pregunta (acierto)
+btnResolve.addEventListener("click", () => {
+  const val = parseInt(qValue.textContent.match(/\\d+/)[0]);
+  teams[currentTeam].score += val;
+  renderTeams();
+  markQuestionUsed();
+  questionModal.classList.add("hidden");
+  showAnswer();
+});
 
-  // Back button (close question without awarding)
-  btnBack.onclick = ()=>{
-    // Note: the question stays enabled unless resolved. Requirement: "Cuando una pregunta se resuelva, ... esta pregunta sea deshabilitada". So failing doesn't disable.
-    // We will simply close modal; secondaryPaid resets next time because openQuestion object will be replaced.
-    closeQuestion();
-  };
+// Pasar turno
+btnPass.addEventListener("click", () => {
+  questionModal.classList.add("hidden");
+  nextTurn();
+});
 
-  closeQuestionBtn.onclick = closeQuestion;
+// Volver sin resolver
+btnBack.addEventListener("click", () => {
+  questionModal.classList.add("hidden");
+});
 
-  qModal.classList.remove('hidden');
+// Marcar pregunta usada
+function markQuestionUsed() {
+  const catIndex = categories.findIndex((c) => qTitle.textContent.includes(c));
+  const val = parseInt(qValue.textContent.match(/\\d+/)[0]);
+  const key = `${catIndex}-${val}`;
+  usedQuestions[key] = true;
+  renderBoard();
+  nextTurn();
 }
 
-function closeQuestion(){
-  // stop audios
-  audioMain.pause(); audioSecondary.pause();
-  audioMain.currentTime = 0; audioSecondary.currentTime = 0;
-  openQuestion = null;
-  qModal.classList.add('hidden');
+// Mostrar respuesta
+function showAnswer() {
+  questionModal.classList.add("hidden");
+  answerModal.classList.remove("hidden");
+  answerVideo.play();
 }
 
-// ----------------- ANSWER FLOW -----------------
-closeAnswerBtn.onclick = ()=>{
-  answerVideo.pause(); answerVideo.currentTime = 0;
-  answerModal.classList.add('hidden');
-};
-answerBackBtn.onclick = ()=>{
-  answerVideo.pause(); answerVideo.currentTime = 0;
-  answerModal.classList.add('hidden');
-};
+// Cerrar respuesta
+answerBack.addEventListener("click", () => {
+  answerModal.classList.add("hidden");
+  answerVideo.pause();
+});
 
-// ----------------- HELPERS -----------------
-function getCategoryName(id){
-  const c = CATEGORIES.find(x=>x.id===id);
-  return c? c.name : id;
-}
+closeAnswer.addEventListener("click", () => {
+  answerModal.classList.add("hidden");
+  answerVideo.pause();
+});
 
-// ----------------- START APP -----------------
-start();
+closeQuestion.addEventListener("click", () => {
+  questionModal.classList.add("hidden");
+});
 
-// Optional: expose save / load to console for debugging
-window.__jeoparty_state = state;
-window.saveJeoparty = saveState;
+// Botones de control manual de turno (opcional)
+document.getElementById("btn-next-team")?.addEventListener("click", nextTurn);
+document.getElementById("btn-prev-team")?.addEventListener("click", () => {
+  currentTeam = (currentTeam - 1 + teams.length) % teams.length;
+  renderTeams();
+  updateTurnIndicator();
+  showTurnChangeAnimation();
+});

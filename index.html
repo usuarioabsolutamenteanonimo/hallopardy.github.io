@@ -16,6 +16,7 @@
       </div>
     </header>
 
+    <!-- Pantalla de configuración -->
     <section id="setup" class="modal-screen">
       <div class="modal">
         <h2>Crear partida</h2>
@@ -40,7 +41,7 @@
       </aside>
 
       <section id="board">
-        <!-- tablero generado por JS -->
+        <!-- Tablero generado por script.js -->
       </section>
     </section>
 
@@ -54,6 +55,7 @@
         <div class="audio-controls">
           <button id="play-main">▶️ Pista principal</button>
           <button id="pay-secondary">💰 Pista secundaria (100 pts)</button>
+          <button id="play-secondary" disabled>▶️ Reproducir secundaria</button>
           <span id="secondary-status"></span>
         </div>
 
@@ -62,6 +64,7 @@
 
         <div class="actions">
           <button id="btn-resolve">✅ Resolver</button>
+          <button id="btn-pass">⏩ Pasar turno</button>
           <button id="btn-back">⏪ Volver al tablero</button>
         </div>
       </div>
@@ -79,10 +82,17 @@
       </div>
     </div>
 
+    <!-- Elemento y sonido para animación de cambio de turno -->
+    <div id="turn-banner" class="turn-banner hidden" aria-live="polite">
+      <div id="turn-banner-text">Turno</div>
+    </div>
+    <audio id="change-turn-audio" src="assets/audio/cambiarturno.mp3" preload="auto"></audio>
+
     <footer>
-      <small>Jeoparty Music — diseñado para reproducir pistas y mostrar vídeos de respuesta. Coloca tus archivos en /assets/.</small>
+      <small>Jeoparty Music — actualizado con animación y sonido de cambio de turno.</small>
     </footer>
   </main>
+
   <script src="script.js"></script>
 </body>
 </html>

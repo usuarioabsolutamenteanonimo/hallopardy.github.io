@@ -1,45 +1,219 @@
-:root{
-  --bg:#0f1724;
-  --card:#0b1220;
-  --accent:#ffcc00;
-  --muted:#96a0b6;
-  --glass: rgba(255,255,255,0.03);
+/* =========================
+   ESTILOS GENERALES
+========================= */
+body {
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(180deg, #0a0a1f, #181833);
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-*{box-sizing:border-box}
-html,body,#app{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
-body{background:linear-gradient(180deg,#071024 0%, #0b1220 100%);color:#e6eef8}
-header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px}
-header h1{margin:0;font-size:1.4rem}
-#top-controls button{margin-left:8px}
 
-#board-area{display:flex;gap:16px;padding:12px 24px}
-#scoreboard{width:240px;background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
-#teams-list{display:flex;flex-direction:column;gap:8px}
-.team{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:var(--glass)}
-.team.current{outline:3px solid rgba(255,204,0,0.12)}
-.team .name{font-weight:600}
-.team .score{font-weight:700}
-.controls{display:flex;gap:8px;margin-top:12px}
+h1, h2, h3 {
+  text-align: center;
+}
 
-#board{flex:1;display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
-.category{background:linear-gradient(180deg,#071b2b,#082233);padding:8px;border-radius:8px;text-align:center}
-.category h3{margin:6px 0}
-.value-cell{background:var(--glass);padding:20px;border-radius:8px;cursor:pointer;font-weight:800;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
-.value-cell.disabled{opacity:0.35;pointer-events:none}
+button {
+  background-color: #1f51ff;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
 
-.modal-screen{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center}
-.modal{background:#071022;padding:18px;border-radius:12px;min-width:320px;max-width:92%;box-shadow:0 10px 40px rgba(0,0,0,0.6)}
-.modal.large{min-width:720px}
-.hidden{display:none}
-.modal .close{position:absolute;right:16px;top:12px;background:none;border:0;color:#fff;font-size:1.1rem}
-.audio-controls{display:flex;gap:8px;align-items:center;margin:12px 0}
-.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+button:hover {
+  background-color: #436aff;
+  transform: scale(1.05);
+}
 
-footer{padding:12px 24px;color:var(--muted)}
+button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+  transform: none;
+}
 
-/* Responsive */
-@media (max-width:900px){
-  #board{grid-template-columns:repeat(2,1fr)}
-  #scoreboard{width:100%}
-  #board-area{flex-direction:column}
+.muted {
+  opacity: 0.7;
+  font-size: 0.9em;
+}
+
+/* =========================
+   CONTENEDORES PRINCIPALES
+========================= */
+#board-area {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  width: 95%;
+  margin-top: 20px;
+  gap: 20px;
+}
+
+#scoreboard {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 15px;
+  padding: 15px;
+  width: 220px;
+}
+
+#teams-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-gap: 10px;
+  flex: 1;
+}
+
+.category {
+  background-color: #222;
+  text-align: center;
+  padding: 10px;
+  font-weight: bold;
+  border-radius: 10px;
+}
+
+.cell {
+  background-color: #0033aa;
+  text-align: center;
+  padding: 20px;
+  font-size: 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.cell:hover {
+  background-color: #0048ff;
+}
+
+.cell.used {
+  background-color: #111;
+  color: #777;
+  cursor: not-allowed;
+}
+
+/* =========================
+   MODALES
+========================= */
+.modal-screen {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+.modal {
+  background: #222;
+  padding: 20px;
+  border-radius: 15px;
+  max-width: 700px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+  animation: modalIn 0.3s ease;
+}
+
+.modal.large {
+  max-width: 900px;
+}
+
+.modal .close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@keyframes modalIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =========================
+   ANIMACIÓN DE CAMBIO DE TURNO
+========================= */
+.turn-banner {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #1f51ff, #0a0a1f);
+  color: white;
+  padding: 40px 80px;
+  border-radius: 20px;
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.turn-banner.show {
+  animation: turnBanner 2s ease forwards;
+}
+
+@keyframes turnBanner {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+}
+
+/* =========================
+   PIE DE PÁGINA
+========================= */
+footer {
+  margin-top: auto;
+  padding: 15px;
+  opacity: 0.6;
+  font-size: 0.85rem;
 }
