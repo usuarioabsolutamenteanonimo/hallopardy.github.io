@@ -1,97 +1,89 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jeoparty Music</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <main id="app">
-    <header>
-      <h1>Jeoparty Music</h1>
-      <div id="top-controls">
-        <button id="btn-new-game">Nuevo juego</button>
-        <button id="btn-reset">Reiniciar tablero</button>
-      </div>
-    </header>
 
-    <!-- Pantalla de configuración -->
-    <section id="setup" class="modal-screen">
-      <div class="modal">
-        <h2>Crear partida</h2>
-        <label>Nº de equipos: <input id="num-teams" type="number" min="1" max="8" value="2" /></label>
-        <div id="teams-names"></div>
-        <div class="row">
-          <button id="btn-create">Crear partida</button>
-        </div>
-        <p class="muted">Los datos se guardan en localStorage para persistir entre recargas.</p>
-      </div>
-    </section>
+  <!-- ===== SETUP (pantalla inicial) ===== -->
+  <section id="setup" class="screen">
+    <h1>🎵 Jeoparty Music 🎵</h1>
+    <p>Configura los equipos para comenzar</p>
 
-    <section id="board-area">
-      <aside id="scoreboard">
-        <h3>Equipos</h3>
-        <div id="teams-list"></div>
-        <div class="controls">
-          <button id="btn-prev-team">« Anterior</button>
-          <button id="btn-next-team">Siguiente »</button>
-        </div>
-        <p id="current-team-indicator"></p>
-      </aside>
+    <label for="num-teams">Número de equipos:</label>
+    <input id="num-teams" type="number" min="1" max="6" value="2" />
 
-      <section id="board">
-        <!-- Tablero generado por script.js -->
-      </section>
-    </section>
+    <div id="teams-names"></div>
 
-    <!-- Modal de pregunta -->
-    <div id="question-modal" class="modal-screen hidden">
-      <div class="modal large">
-        <button class="close" id="close-question">✕</button>
-        <h2 id="q-title"></h2>
-        <p id="q-value"></p>
+    <div class="setup-buttons">
+      <button id="btn-create">Crear juego</button>
+    </div>
+  </section>
 
-        <div class="audio-controls">
-          <button id="play-main">▶️ Pista principal</button>
-          <button id="pay-secondary">💰 Pista secundaria (100 pts)</button>
-          <button id="play-secondary" disabled>▶️ Reproducir secundaria</button>
-          <span id="secondary-status"></span>
-        </div>
+  <!-- ===== JUEGO ===== -->
+  <main id="game" class="hidden">
 
-        <audio id="audio-main" preload="none"></audio>
-        <audio id="audio-secondary" preload="none"></audio>
+    <div id="current-team-indicator">Turno:</div>
 
-        <div class="actions">
-          <button id="btn-resolve">✅ Resolver</button>
-          <button id="btn-pass">⏩ Pasar turno</button>
-          <button id="btn-back">⏪ Volver al tablero</button>
-        </div>
-      </div>
+    <div id="teams-list"></div>
+
+    <div class="controls">
+      <button id="btn-reset">🔄 Reiniciar</button>
+      <button id="btn-new-game">🏠 Nuevo juego</button>
     </div>
 
-    <!-- Modal video de respuesta -->
-    <div id="answer-modal" class="modal-screen hidden">
-      <div class="modal large">
-        <button class="close" id="close-answer">✕</button>
-        <h2>Respuesta</h2>
-        <video id="answer-video" controls preload="metadata"></video>
-        <div class="actions">
-          <button id="answer-back">Volver al tablero</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Elemento y sonido para animación de cambio de turno -->
-    <div id="turn-banner" class="turn-banner hidden" aria-live="polite">
-      <div id="turn-banner-text">Turno</div>
-    </div>
-    <audio id="change-turn-audio" src="assets/audio/cambiarturno.mp3" preload="auto"></audio>
-
-    <footer>
-      <small>Jeoparty Music — actualizado con animación y sonido de cambio de turno.</small>
-    </footer>
+    <div id="board"></div>
   </main>
+
+  <!-- ===== MODAL PREGUNTA ===== -->
+  <div id="question-modal" class="modal-container hidden">
+    <div class="modal">
+      <h2 id="q-title">Pregunta</h2>
+      <p id="q-value"></p>
+
+      <div class="audio-controls">
+        <button id="play-main">▶ Pista principal</button>
+        <div class="secondary">
+          <button id="pay-secondary">💰 Pagar secundaria (-100)</button>
+          <button id="play-secondary" disabled>▶ Pista secundaria</button>
+          <span id="secondary-status">(no pagada)</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-resolve">✅ Resolver</button>
+        <button id="btn-pass">⏭ Pasar</button>
+        <button id="btn-back">⬅ Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MODAL RESPUESTA ===== -->
+  <div id="answer-modal" class="modal-container hidden">
+    <div class="modal">
+      <h2>Respuesta</h2>
+      <video id="answer-video" controls></video>
+      <div class="modal-actions">
+        <button id="answer-back">⬅ Volver al tablero</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BANNER DE TURNO ===== -->
+  <div id="turn-banner" class="hidden">
+    <span id="turn-banner-text"></span>
+  </div>
+
+  <!-- ===== AUDIO CAMBIO DE TURNO ===== -->
+  <audio id="change-turn-audio" src="assets/audio/cambiarturno.mp3" preload="auto"></audio>
+
+  <!-- ===== AUDIOS DE JUEGO (se rellenan dinámicamente) ===== -->
+  <audio id="audio-main"></audio>
+  <audio id="audio-secondary"></audio>
 
   <script src="script.js"></script>
 </body>
