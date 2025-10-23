@@ -6,8 +6,8 @@ const CATEGORIES = [
   "Anime",
   "Cultura popular",
   "Rock / Metal",
-  "Meme o cultura digital",
-  "Videojuegos",
+  "Cultura digital",
+  "Banda sonora",
   "???"
 ];
 const CATEGORY_KEYS = [
