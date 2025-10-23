@@ -1,5 +1,5 @@
 /* =======================================================
-   JEOPARTY MUSIC — script.js (versión funcional)
+   JEOPARTY MUSIC — script.js (versión funcional)a
    ======================================================= */
 
 const CATEGORIES = [
