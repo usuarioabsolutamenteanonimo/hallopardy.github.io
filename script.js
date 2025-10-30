@@ -1,5 +1,5 @@
 /* =======================================================
-   JEOPARTY MUSIC — script.js (versión funcional)a
+   JEOPARTY MUSIC — script.js (v2 con Musicales + mejoras QOL)
    ======================================================= */
 
 const CATEGORIES = [
@@ -8,22 +8,26 @@ const CATEGORIES = [
   "Rock / Metal",
   "Cultura digital",
   "Banda sonora",
+  "Musicales",
   "???"
 ];
+
 const CATEGORY_KEYS = [
   "anime",
   "culturapopular",
   "rockmetal",
   "memeoculturadigital",
   "videojuegos",
+  "musicales",
   "random"
 ];
+
 const VALUES = [200, 400, 600, 800, 1000];
 
 let teams = [];
 let currentTeam = 0;
 let usedQuestions = {};
-const LS_KEY = "jeoparty_state_v4";
+const LS_KEY = "jeoparty_state_v5";
 
 const setupScreen = document.getElementById("setup");
 const gameScreen = document.getElementById("game");
@@ -116,16 +120,43 @@ function renderAll() {
   renderTeamsList();
   renderBoard();
   updateTurnIndicator();
+  checkVictory();
 }
+
 function renderTeamsList() {
   teamsList.innerHTML = "";
   teams.forEach((t, idx) => {
     const el = document.createElement("div");
     el.className = "team" + (idx === currentTeam ? " current" : "");
-    el.innerHTML = `<div class="name">${t.name}</div><div class="score">${t.score} pts</div>`;
+    el.innerHTML = `
+      <div class="name">${t.name}</div>
+      <div class="score">${t.score} pts</div>
+      <div class="adjust">
+        <button class="plus" data-i="${idx}">+100</button>
+        <button class="minus" data-i="${idx}">-100</button>
+      </div>`;
     teamsList.appendChild(el);
   });
+
+  // Ajuste manual de puntuaciones
+  teamsList.querySelectorAll(".plus").forEach(btn =>
+    btn.addEventListener("click", e => {
+      const i = parseInt(e.target.dataset.i);
+      teams[i].score += 100;
+      saveState();
+      renderAll();
+    })
+  );
+  teamsList.querySelectorAll(".minus").forEach(btn =>
+    btn.addEventListener("click", e => {
+      const i = parseInt(e.target.dataset.i);
+      teams[i].score -= 100;
+      saveState();
+      renderAll();
+    })
+  );
 }
+
 function updateTurnIndicator() {
   currentIndicator.textContent = `Turno: ${teams[currentTeam]?.name || "-"}`;
 }
@@ -167,7 +198,6 @@ function openQuestionModal(catIndex, val) {
   const mainPath = `assets/audio/${catKey}/${val}-main.mp3`;
   const secPath = `assets/audio/${catKey}/${val}-secondary.mp3`;
   const videoPath = `assets/videos/${catKey}-${val}.mp4`;
-  console.log("🎵", mainPath, secPath, videoPath);
 
   qTitle.textContent = `${CATEGORIES[catIndex]} — ${val} pts`;
   qValueEl.textContent = `${val} puntos`;
@@ -195,6 +225,22 @@ function openQuestionModal(catIndex, val) {
       audioSecondary.play();
     }
   };
+
+  // Botones nuevos: detener reproducción
+  if (!document.getElementById("btn-stop-main")) {
+    const stopMain = document.createElement("button");
+    stopMain.id = "btn-stop-main";
+    stopMain.textContent = "⏹ Detener principal";
+    stopMain.onclick = () => audioMain.pause();
+    playMainBtn.after(stopMain);
+
+    const stopSec = document.createElement("button");
+    stopSec.id = "btn-stop-secondary";
+    stopSec.textContent = "⏹ Detener secundaria";
+    stopSec.onclick = () => audioSecondary.pause();
+    playSecondaryBtn.after(stopSec);
+  }
+
   btnResolve.onclick = () => {
     teams[currentTeam].score += val;
     usedQuestions[qKey] = true;
@@ -209,6 +255,20 @@ function openQuestionModal(catIndex, val) {
     nextTeam();
   };
   btnBack.onclick = () => { qModal.classList.add("hidden"); };
+
+  // Resetear pregunta manualmente
+  if (!document.getElementById("btn-reset-question")) {
+    const btnResetQ = document.createElement("button");
+    btnResetQ.id = "btn-reset-question";
+    btnResetQ.textContent = "♻ Resetear pregunta";
+    btnResetQ.onclick = () => {
+      delete usedQuestions[qKey];
+      qModal.classList.add("hidden");
+      saveState();
+      renderAll();
+    };
+    qModal.querySelector(".modal-actions").appendChild(btnResetQ);
+  }
 }
 
 /* ---------- RESPUESTA ---------- */
@@ -230,6 +290,7 @@ function nextTeam() {
   renderAll();
   saveState();
 }
+
 function showTurnChange() {
   turnBannerText.textContent = `Turno de ${teams[currentTeam].name}`;
   changeTurnAudio.currentTime = 0;
@@ -240,6 +301,31 @@ function showTurnChange() {
     turnBanner.classList.remove("show");
     turnBanner.classList.add("hidden");
   }, 2000);
+}
+
+/* ---------- VICTORIA ---------- */
+function checkVictory() {
+  const totalQuestions = CATEGORY_KEYS.length * VALUES.length;
+  const answered = Object.keys(usedQuestions).length;
+  if (answered >= totalQuestions) {
+    showVictoryScreen();
+  }
+}
+
+function showVictoryScreen() {
+  const winner = teams.reduce((a, b) => (a.score > b.score ? a : b));
+  const screen = document.createElement("div");
+  screen.id = "victory-screen";
+  screen.innerHTML = `
+    <h1>🏆 ¡Victoria!</h1>
+    <p>El equipo ganador es <strong>${winner.name}</strong> con ${winner.score} puntos.</p>
+    <button id="btn-restart-game">Nuevo juego</button>
+  `;
+  document.body.appendChild(screen);
+  document.getElementById("btn-restart-game").onclick = () => {
+    document.body.removeChild(screen);
+    btnNewGame.click();
+  };
 }
 
 /* ---------- INICIO ---------- */

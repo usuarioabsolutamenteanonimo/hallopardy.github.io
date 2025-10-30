@@ -33,6 +33,8 @@
 
     <div class="controls">
       <button id="btn-reset">🔄 Reiniciar</button>
+      <button id="btn-adjust">⚖️ Ajustar puntos</button>
+      <button id="btn-reactivate">♻️ Reactivar pregunta</button>
       <button id="btn-new-game">🏠 Nuevo juego</button>
     </div>
 
@@ -52,6 +54,7 @@
           <button id="play-secondary" disabled>▶ Pista secundaria</button>
           <span id="secondary-status">(no pagada)</span>
         </div>
+        <button id="stop-audio">⏹ Detener reproducción</button>
       </div>
 
       <div class="modal-actions">
@@ -73,6 +76,36 @@
     </div>
   </div>
 
+  <!-- ===== MODAL REACTIVAR PREGUNTA ===== -->
+  <div id="reactivate-modal" class="modal-container hidden">
+    <div class="modal">
+      <h2>Reactivar pregunta</h2>
+      <label for="reactivate-category">Categoría:</label>
+      <select id="reactivate-category"></select>
+      <label for="reactivate-value">Valor:</label>
+      <select id="reactivate-value">
+        <option value="200">200</option>
+        <option value="400">400</option>
+        <option value="600">600</option>
+        <option value="800">800</option>
+        <option value="1000">1000</option>
+      </select>
+      <div class="modal-actions">
+        <button id="confirm-reactivate">✅ Confirmar</button>
+        <button id="cancel-reactivate">❌ Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PANTALLA DE VICTORIA ===== -->
+  <div id="victory-screen" class="modal-container hidden">
+    <div class="modal">
+      <h2>🏆 ¡Fin del juego! 🏆</h2>
+      <div id="final-scores"></div>
+      <button id="btn-new-round">🔁 Nueva partida</button>
+    </div>
+  </div>
+
   <!-- ===== BANNER DE TURNO ===== -->
   <div id="turn-banner" class="hidden">
     <span id="turn-banner-text"></span>
@@ -81,7 +114,7 @@
   <!-- ===== AUDIO CAMBIO DE TURNO ===== -->
   <audio id="change-turn-audio" src="assets/audio/cambiarturno.mp3" preload="auto"></audio>
 
-  <!-- ===== AUDIOS DE JUEGO (se rellenan dinámicamente) ===== -->
+  <!-- ===== AUDIOS DE JUEGO ===== -->
   <audio id="audio-main"></audio>
   <audio id="audio-secondary"></audio>
 

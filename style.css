@@ -1,5 +1,5 @@
 /* =======================================================
-   JEOPARTY MUSIC — style.css (versión corregida)
+   JEOPARTY MUSIC — style.css (versión mejorada con victoria + QOL)
    ======================================================= */
 :root {
   --bg: #0b0c1a;
@@ -77,8 +77,10 @@ body {
 
 .controls {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   margin-bottom: 1rem;
+  justify-content: center;
 }
 
 .controls button {
@@ -131,10 +133,10 @@ body {
    ======================================================= */
 #board {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   gap: 6px;
   width: 95%;
-  max-width: 1100px;
+  max-width: 1150px;
 }
 
 .category {
@@ -222,6 +224,22 @@ body {
 #btn-resolve { background: var(--success); color: #000; }
 #btn-back { background: var(--accent); color: #000; }
 
+/* Botones extra */
+#btn-stop-main,
+#btn-stop-secondary,
+#btn-adjust-score,
+#btn-reset-question {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--accent-dark);
+}
+#btn-stop-main:hover,
+#btn-stop-secondary:hover,
+#btn-adjust-score:hover,
+#btn-reset-question:hover {
+  background: var(--accent-dark);
+}
+
 /* =======================================================
    TURN BANNER
    ======================================================= */
@@ -263,10 +281,41 @@ body {
 }
 
 /* =======================================================
-   CURRENT TEAM INDICATOR
+   VICTORY SCREEN
    ======================================================= */
-#current-team-indicator {
+#victory-screen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at top, #1b1b3b, #000010);
+  color: var(--gold);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 300;
+  text-align: center;
+  animation: popIn 0.6s ease;
+}
+
+#victory-screen h1 {
+  font-size: 3rem;
+  text-shadow: 0 0 25px var(--gold);
+}
+#victory-screen p {
+  font-size: 1.5rem;
+}
+#victory-screen button {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  padding: 0.8rem 1.6rem;
+  margin-top: 1.5rem;
   font-weight: bold;
-  color: var(--accent);
-  text-shadow: 0 0 6px var(--accent);
+  cursor: pointer;
+  transition: var(--transition);
+}
+#victory-screen button:hover {
+  background: var(--accent-dark);
+  transform: scale(1.1);
 }
