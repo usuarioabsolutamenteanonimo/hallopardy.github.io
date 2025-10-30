@@ -1,5 +1,5 @@
 /* =======================================================
-   JEOPARTY MUSIC — script.js (v2 con Musicales + mejoras QOL)
+   JEOPARTY MUSIC — script.js (v3 sin "???")
    ======================================================= */
 
 const CATEGORIES = [
@@ -8,8 +8,7 @@ const CATEGORIES = [
   "Rock / Metal",
   "Cultura digital",
   "Banda sonora",
-  "Musicales",
-  "Sonidos"
+  "Musicales"
 ];
 
 const CATEGORY_KEYS = [
@@ -18,8 +17,7 @@ const CATEGORY_KEYS = [
   "rockmetal",
   "memeoculturadigital",
   "videojuegos",
-  "musicales",
-  "random"
+  "musicales"
 ];
 
 const VALUES = [200, 400, 600, 800, 1000];
@@ -27,8 +25,9 @@ const VALUES = [200, 400, 600, 800, 1000];
 let teams = [];
 let currentTeam = 0;
 let usedQuestions = {};
-const LS_KEY = "jeoparty_state_v5";
+const LS_KEY = "jeoparty_state_v6";
 
+/* --- Elementos del DOM --- */
 const setupScreen = document.getElementById("setup");
 const gameScreen = document.getElementById("game");
 const numTeamsInput = document.getElementById("num-teams");
@@ -138,7 +137,6 @@ function renderTeamsList() {
     teamsList.appendChild(el);
   });
 
-  // Ajuste manual de puntuaciones
   teamsList.querySelectorAll(".plus").forEach(btn =>
     btn.addEventListener("click", e => {
       const i = parseInt(e.target.dataset.i);
@@ -226,7 +224,6 @@ function openQuestionModal(catIndex, val) {
     }
   };
 
-  // Botones nuevos: detener reproducción
   if (!document.getElementById("btn-stop-main")) {
     const stopMain = document.createElement("button");
     stopMain.id = "btn-stop-main";
@@ -256,7 +253,6 @@ function openQuestionModal(catIndex, val) {
   };
   btnBack.onclick = () => { qModal.classList.add("hidden"); };
 
-  // Resetear pregunta manualmente
   if (!document.getElementById("btn-reset-question")) {
     const btnResetQ = document.createElement("button");
     btnResetQ.id = "btn-reset-question";
