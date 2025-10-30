@@ -9,7 +9,7 @@ const CATEGORIES = [
   "Cultura digital",
   "Banda sonora",
   "Musicales",
-  "???"
+  "Sonidos"
 ];
 
 const CATEGORY_KEYS = [
