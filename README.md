@@ -13,7 +13,6 @@
   4. Cultura digital / memes  
   5. Videojuegos  
   6. <span style="color:#ff69b4">Musicales</span> *(¡nueva!)*  
-  7. ??? *(aleatoria o impredecible)*  
 
 - 💰 Puntuaciones clásicas: *200 – 400 – 600 – 800 – 1000 puntos*  
 - 🎧 **Dos pistas por pregunta:**
@@ -59,8 +58,8 @@ Jeoparty-Music/
 │   │   ├── rockmetal/
 │   │   ├── memeoculturadigital/
 │   │   ├── videojuegos/
-│   │   ├── musicales/
-│   │   └── random/
+│   │   └── musicales/
+│   │   
 │   │
 │   ├── videos/
 │   └── cambiarturno.mp3

@@ -1,5 +1,5 @@
 /* =======================================================
-   JEOPARTY MUSIC — script.js (v3 sin "???")
+   JEOPARTY MUSIC — script.js xd")
    ======================================================= */
 
 const CATEGORIES = [
